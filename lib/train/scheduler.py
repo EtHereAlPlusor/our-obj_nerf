@@ -2,7 +2,7 @@ from collections import Counter
 from lib.utils.lr_scheduler import WarmupMultiStepLR, MultiStepLR, ExponentialLR
 
 
-def make_lr_scheduler(cfg, optimizer):
+def create_lr_scheduler(cfg, optimizer):
     cfg_scheduler = cfg.train.scheduler
     if cfg_scheduler.type == 'multi_step':
         scheduler = MultiStepLR(optimizer,

@@ -1,33 +1,26 @@
-import imp
 import torch
 import tqdm
 
-from lib.dataloader.make_dataset import make_data_loader
-from lib.network.make_network import make_network
-from lib.train.make_trainer import make_trainer
-from lib.train.optimizer import make_optimizer
-from lib.train.scheduler import make_lr_scheduler, set_lr_scheduler
-from lib.train.recorder import make_recorder
+from lib.dataloader.create_dataset import create_data_loader
+from lib.network.create_network import create_network
+from lib.train.create_trainer import create_trainer
+from lib.train.optimizer import create_optimizer
+from lib.train.scheduler import create_lr_scheduler, set_lr_scheduler
+from lib.train.recorder import create_recorder
 from lib.utils.net_utils import save_model, load_model, load_network, load_pretrain
 from lib.dataloader.data_utils import to_cuda
-from lib.visualizer.make_visualizer import make_visualizer
+from lib.visualizer.create_visualizer import create_visualizer
 from lib.config.config import cfg
-
-if cfg.fix_random:
-    torch.manual_seed(0)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def train():
-    network = make_network(cfg)
+    network = create_network(cfg)
     
-    trainer = make_trainer(cfg, network)
-    optimizer = make_optimizer(cfg, network)
-    scheduler = make_lr_scheduler(cfg, optimizer)
-    recorder = make_recorder(cfg)
+    trainer = create_trainer(cfg, network)
+    optimizer = create_optimizer(cfg, network)
+    scheduler = create_lr_scheduler(cfg, optimizer)
+    recorder = create_recorder(cfg)
 
     begin_epoch = load_model(network,
                             optimizer,
@@ -38,7 +31,7 @@ def train():
 
     set_lr_scheduler(cfg, scheduler)
 
-    train_loader = make_data_loader(cfg,
+    train_loader = create_data_loader(cfg,
                                     is_train=True,
                                     is_distributed=cfg.distributed,
                                     max_iter=cfg.ep_iter)
@@ -62,8 +55,8 @@ def train():
 
 def visualize(network):
     network.eval()
-    data_loader = make_data_loader(cfg, is_train=False)
-    visualizer = make_visualizer(cfg)
+    data_loader = create_data_loader(cfg, is_train=False)
+    visualizer = create_visualizer(cfg)
     for batch in tqdm.tqdm(data_loader):
         batch = to_cuda(batch)
         with torch.no_grad():

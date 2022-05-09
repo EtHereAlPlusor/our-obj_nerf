@@ -105,5 +105,5 @@ class Recorder(object):
         return recording_state.format(self.epoch, self.step, loss_state, self.data_time.avg, self.batch_time.avg)
 
 
-def make_recorder(cfg):
+def create_recorder(cfg):
     return Recorder(cfg)

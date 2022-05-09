@@ -53,6 +53,3 @@ def get_embedder(multires, i=0): # 返回一个进行PE的函数embed()，以及
     embedder_obj = Embedder(**embed_kwargs)
     embed = lambda x, eo=embedder_obj : eo.embed(x)
     return embed, embedder_obj.out_dim
-
-xyz_embedder, xyz_dim = get_embedder(cfg.xyz_res)
-view_embedder, view_dim = get_embedder(cfg.view_res)

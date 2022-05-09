@@ -43,8 +43,7 @@ class Loss(nn.Module):
             color_loss = cfg.train.weight_color * self.color_crit(batch['rays_rgb'], output['rgb_0'])
             scalar_stats.update({'color_mse_0': color_loss})
             loss += color_loss
-            psnr = -10. * torch.log(color_loss.detach()) / \
-                    torch.log(torch.Tensor([10.]).to(color_loss.device))
+            psnr = -10. * torch.log(color_loss.detach()) / torch.log(torch.Tensor([10.]).to(color_loss.device))
             scalar_stats.update({'psnr_0': psnr})
         
         scalar_stats.update({'loss': loss})

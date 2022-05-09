@@ -9,7 +9,7 @@ _optimizer_factory = {
 }
 
 
-def make_optimizer(cfg, net):
+def create_optimizer(cfg, net):
     params = []
     lr = cfg.train.lr
     weight_decay = cfg.train.weight_decay

@@ -9,8 +9,6 @@ import imageio
 from multiprocessing import Pool
 from tools.kitti360scripts.helpers.annotation import Annotation3D
 import cv2
-import copy
-import torch
 
 class Dataset:
     def __init__(self, cam2world_root, img_root, bbx_root, data_root, sequence, split):
@@ -86,21 +84,6 @@ class Dataset:
                 raise RuntimeError('%s does not exist!' % image_file_00)
             self.images_list_00[idx] = image_file_00
             self.images_list_01[idx] = image_file_01
-        
-        # load intersections
-        self.bbx_intersection_root = os.path.join(data_root, 'bbx_intersection')
-        self.intersections_dict_00 = {}
-        self.intersections_dict_01 = {}
-        for idx in self.image_ids:
-            frame_name = '%010d' % idx
-            if os.path.exists(os.path.join(self.visible_id,frame_name + '.txt')) == False:
-                continue
-            intersection_file_00 = os.path.join(self.bbx_intersection_root,self.sequence,str(idx) + '.npz')
-            intersection_file_01 = os.path.join(self.bbx_intersection_root, self.sequence,str(idx) + '_01.npz')
-            if not os.path.isfile(intersection_file_00):
-                raise RuntimeError('%s does not exist!' % intersection_file_00)
-            self.intersections_dict_00[idx] = intersection_file_00
-            self.intersections_dict_01[idx] = intersection_file_01
 
         # load annotation3D
         self.annotation3D = Annotation3D(bbx_root, sequence)
@@ -115,7 +98,7 @@ class Dataset:
         self.bbx_static_annotationId = np.array(self.bbx_static_annotationId)
 
         # load metas
-        self.build_metas(self.cam2world_dict_00, self.cam2world_dict_01, self.images_list_00, self.images_list_01, self.intersections_dict_00, self.intersections_dict_01)
+        self.build_metas(self.cam2world_dict_00, self.cam2world_dict_01, self.images_list_00, self.images_list_01)
 
     def load_intrinsic(self, intrinsic_file):
         with open(intrinsic_file) as f:
@@ -142,22 +125,17 @@ class Dataset:
         self.width, self.height = width, height
         self.R_rect = R_rect
 
-    def build_metas(self, cam2world_dict_00, cam2world_dict_01, images_list_00, images_list_01, intersection_dict_00, intersection_dict_01):
+    def build_metas(self, cam2world_dict_00, cam2world_dict_01, images_list_00, images_list_01):
         input_tuples = []
         for idx, frameId in enumerate(self.image_ids):
             pose = cam2world_dict_00[frameId]
             pose[:3, 3] = pose[:3, 3] - self.translation
             image_path = images_list_00[frameId]
-            intersection_path = intersection_dict_00[frameId]
-            intersection = np.load(intersection_path)
-            intersection_depths = intersection['arr_0'].reshape(-1, 10, 2).astype(np.float32)
-            intersection_annotations = intersection['arr_1'].reshape(-1, 10, 2).astype(np.float32)
-            intersection = np.concatenate((intersection_depths, intersection_annotations), axis=2)
             image = (np.array(imageio.imread(image_path)) / 255.).astype(np.float32)
             image = cv2.resize(image, (self.W, self.H), interpolation=cv2.INTER_AREA)
             rays = build_rays(self.intrinsic_00, pose, image.shape[0], image.shape[1])
             rays_rgb = image.reshape(-1, 3)
-            input_tuples.append((rays, rays_rgb, frameId, intersection, self.intrinsic_00))
+            input_tuples.append((rays, rays_rgb, frameId, self.intrinsic_00))
         print('load meta_00 done')
     
         if cfg.use_stereo == True:
@@ -165,31 +143,24 @@ class Dataset:
                 pose = cam2world_dict_01[frameId]
                 pose[:3, 3] = pose[:3, 3] - self.translation
                 image_path = images_list_01[frameId]
-                intersection_path = intersection_dict_01[frameId]
-                intersection = np.load(intersection_path)
-                intersection_depths = intersection['arr_0'].reshape(-1, 10, 2).astype(np.float32)
-                intersection_annotations = intersection['arr_1'].reshape(-1, 10, 2).astype(np.float32)
-                intersection = np.concatenate((intersection_depths, intersection_annotations), axis=2)
                 image = (np.array(imageio.imread(image_path)) / 255.).astype(np.float32)
                 image = cv2.resize(image, (self.W, self.H), interpolation=cv2.INTER_AREA)
                 rays = build_rays(self.intrinsic_00, pose, image.shape[0], image.shape[1])
                 rays_rgb = image.reshape(-1, 3)
-                input_tuples.append((rays, rays_rgb, frameId, intersection, self.intrinsic_01))
+                input_tuples.append((rays, rays_rgb, frameId, self.intrinsic_01))
             print('load meta_01 done')
         self.metas = input_tuples
 
     def __getitem__(self, index):
-        rays, rays_rgb, frameId, intersection, intrinsics = self.metas[index]
+        rays, rays_rgb, frameId, intrinsics = self.metas[index]
         if self.split == 'train':
             rand_ids = np.random.permutation(len(rays))
             rays = rays[rand_ids[:cfg.N_rays]]
             rays_rgb = rays_rgb[rand_ids[:cfg.N_rays]]
-            intersection = intersection[rand_ids[:cfg.N_rays]]
 
         ret = {
             'rays': rays.astype(np.float32),
             'rays_rgb': rays_rgb.astype(np.float32),
-            'intersection': intersection,
             'intrinsics': intrinsics.astype(np.float32),
             'meta': {
                 'sequence': '{}'.format(self.sequence)[0],
