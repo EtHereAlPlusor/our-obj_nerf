@@ -1,9 +1,9 @@
 task: our-nerf
 gpu: 5
-exp_name: 'our-nerf_test_3'
+exp_name: 'our-nerf_test_1'
 
 ####
-N_rays: 512
+N_rays: 1024
 chunk_size: 2048
 N_samples: 64
 cascade_samples: 128
@@ -45,7 +45,7 @@ train:
     batch_size: 1
     lr: 5e-4
     weight_decay: 0.
-    epoch: 50
+    epoch: 60
     scheduler:
         type: 'exponential'
         gamma: 0.5

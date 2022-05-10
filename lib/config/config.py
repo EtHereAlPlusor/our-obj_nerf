@@ -77,14 +77,17 @@ cfg.test.batch_sampler = 'default'
 cfg.test.sampler_meta = CN({'min_hw': [480, 640], 'max_hw': [480, 640], 'strategy': 'origin'})
 
 # trained model
-cfg.trained_model_dir = 'logs/trained_model'
-cfg.trained_config_dir = 'logs/trained_config'
+cfg.trained_model_dir = 'trained_model/'
+cfg.trained_config_dir = 'trained_config/'
 
 # recorder
-cfg.record_dir = 'logs/record'
+cfg.record_dir = 'record/'
 
 # result
-cfg.result_dir = 'logs/result'
+cfg.result_dir = 'result/'
+
+# base
+cfg.base_dir = 'logs/'
 
 
 def parse_cfg(cfg, args):
@@ -93,10 +96,10 @@ def parse_cfg(cfg, args):
     # assign the gpus
     os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(cfg.gpu)
     cfg.exp_name = cfg.exp_name.replace('gittag', os.popen('git describe --tags --always').readline().strip())
-    cfg.trained_model_dir = os.path.join(cfg.trained_model_dir, cfg.task, cfg.exp_name)    
-    cfg.trained_config_dir = os.path.join(cfg.trained_config_dir, cfg.task, cfg.exp_name)
-    cfg.record_dir = os.path.join(cfg.record_dir, cfg.task, cfg.exp_name)
-    cfg.result_dir = os.path.join(cfg.result_dir, cfg.task, cfg.exp_name)
+    cfg.trained_model_dir = os.path.join(cfg.base_dir, cfg.task, cfg.exp_name, cfg.trained_model_dir)    
+    cfg.trained_config_dir = os.path.join(cfg.base_dir, cfg.task, cfg.exp_name, cfg.trained_config_dir)
+    cfg.record_dir = os.path.join(cfg.base_dir, cfg.task, cfg.exp_name, cfg.record_dir)
+    cfg.result_dir = os.path.join(cfg.base_dir, cfg.task, cfg.exp_name, cfg.result_dir)
     cfg.local_rank = args.local_rank
     modules = [key for key in cfg if '_module' in key]
     for module in modules:

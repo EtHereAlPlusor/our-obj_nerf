@@ -9,22 +9,6 @@ def sample_along_ray(near, far, N_samples):
     z_steps = torch.linspace(0, 1, N_samples, device=near.device)[None, None]
     z_vals = near[..., None] * (1 - z_steps) + far[..., None] * z_steps
     return z_vals
-
-def raw2weights(raw, z_vals, rays_d, white_bkgd=False):
-    raw2alpha = lambda raw, dists, act_fn=F.relu: 1.-torch.exp(-act_fn(raw)*dists)
-    dists = z_vals[...,1:] - z_vals[...,:-1]
-    #dists = torch.cat([dists, torch.Tensor([1e10]).expand(dists[...,:1].shape).to(raw.device)], -1)
-    dists = torch.cat([dists, dists[...,-2:-1]], -1) # for lidar samples)
-    rgb = torch.sigmoid(raw[...,:3])
-    alpha = raw2alpha(raw[...,3], dists)
-    T = torch.cumprod(1. - alpha + 1e-10, dim=-1)[..., :-1]
-    T = torch.cat([torch.ones_like(T[..., 0:1]), T], dim=-1)
-    weights = alpha * T
-
-    rgb_map = torch.sum(weights[...,None] * rgb, -2)
-    depth_map = torch.sum(weights * z_vals, -1)
-    ret = {'rgb': rgb_map, 'depth': depth_map, 'weights': weights}
-    return ret
     
 def raw2outputs(raw, z_vals, rays_d, white_bkgd=False, is_test = False):
     raw2alpha = lambda raw, dists, act_fn=F.relu: 1.-torch.exp(-act_fn(raw)*dists)
@@ -44,6 +28,9 @@ def raw2outputs(raw, z_vals, rays_d, white_bkgd=False, is_test = False):
     return ret
 
 def perturb_samples(z_vals):
+    """
+    Stratified sampling
+    """
     # get intervals between samples
     mids = .5 * (z_vals[..., 1:] + z_vals[..., :-1])
     upper = torch.cat([mids, z_vals[..., -1:]], dim=-1)
