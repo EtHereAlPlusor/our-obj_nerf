@@ -15,7 +15,7 @@ cfg.cascade_samples = 128
 cfg.samples_all = 192
 cfg.use_stereo = False
 cfg.dist = 300
-cfg.objects_only = False
+cfg.is_editing = False
 
 # module
 cfg.train_dataset_module = ''

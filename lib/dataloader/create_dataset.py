@@ -2,7 +2,7 @@ from . import samplers
 from .dataset_catalog import DatasetCatalog
 import torch
 import torch.utils.data
-import imp
+import importlib
 import os
 from .collate_batch import create_collator
 import numpy as np
@@ -27,7 +27,7 @@ def _dataset_factory(is_train, is_val):
     else:
         module = cfg.test_dataset_module
         path = cfg.test_dataset_path
-    dataset = imp.load_source(module, path).Dataset
+    dataset = importlib.machinery.SourceFileLoader(module, path).load_module().Dataset
     return dataset
 
 

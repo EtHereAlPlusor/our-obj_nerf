@@ -1,4 +1,3 @@
-import imp
 from multiprocessing.spawn import import_main_path
 import torch
 import os
@@ -9,8 +8,9 @@ from collections import OrderedDict
 from termcolor import colored
 import sys
 import yaml
-from lib.config.config import cfg
 import os
+
+from lib.config.config import cfg
 
 def sigmoid(x):
     y = torch.clamp(x.sigmoid(), min=1e-4, max=1 - 1e-4)
@@ -378,7 +378,7 @@ def load_network(net, model_dir, resume=True, epoch=-1, strict=True):
         model_path = model_dir
 
     print('load init model: {}'.format(model_path))
-    pretrained_model = torch.load(model_path, map_location="cuda:"+str(cfg.local_rank))
+    pretrained_model = torch.load(model_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
     new_state_dict = OrderedDict()
     cur_dict = dict(net.named_parameters())
     for k,v in pretrained_model['net'].items():

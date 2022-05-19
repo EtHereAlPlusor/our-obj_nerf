@@ -32,7 +32,7 @@ class Loss(nn.Module):
         # if 'rgb_fine_scn' or 'rgb_fine_obj' in output.keys():
             color_loss_fine_scn = cfg.train.weight_color * torch.sum(self.color_crit(batch['rays_rgb'], output['rgb_fine_scn']), 2)
             color_loss_fine_obj = cfg.train.weight_color * mask * torch.sum(self.color_crit(batch['rays_rgb'], output['rgb_fine_obj']), 2)
-            color_loss = torch.mean((0.05*color_loss_fine_scn + color_loss_fine_obj))
+            color_loss = torch.mean((cfg.train.weight_scn*color_loss_fine_scn + color_loss_fine_obj))
             # color_loss = torch.mean((color_loss_fine_obj))
             scalar_stats.update({'color': color_loss})
             loss += color_loss

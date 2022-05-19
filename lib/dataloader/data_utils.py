@@ -1,11 +1,5 @@
 import numpy as np
-import cv2
-import random
-from lib.config.config import cfg
-from torch import nn
 import torch
-from imgaug import augmenters as iaa
-import collections
 
 def readVariable(fid, name, M, N):
     # rewind

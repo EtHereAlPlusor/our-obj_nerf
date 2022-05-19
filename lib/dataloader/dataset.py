@@ -1,11 +1,11 @@
 import numpy as np
 import os
+import cv2
+import imageio
+
 from lib.dataloader.data_utils import *
 from lib.config.config import cfg
-import imageio
-from multiprocessing import Pool
 from tools.kitti360scripts.helpers.annotation import Annotation3D
-import cv2
 
 class Dataset:
     def __init__(self, cam2world_root, img_root, instance_root, bbx_root, data_root, sequence, split):
@@ -71,7 +71,7 @@ class Dataset:
                     self.bbx_static_globalId.append(globalId)
         self.bbx_static_globalId = np.array(self.bbx_static_globalId)
         if cfg.instance_id not in self.bbx_static_globalId:
-            raise RuntimeError('Did not find the car!')
+            raise RuntimeError('Did not find the instance!')
         self.bbx_static_vertices = self.bbx_static[cfg.instance_id].vertices # x=forward, y=left, z=up
         line_center = np.zeros((4,3))
         for line_id in range(4):
@@ -138,7 +138,7 @@ class Dataset:
                     instance_ids.append(instance[row, col])
             instance_ids = np.array(instance_ids)
             input_tuples.append((rays, rays_rgb, frameId, self.intrinsic, instance_ids))
-        print('load meta_00 done')
+        # print('load meta_00 done')
     
         self.metas = input_tuples
 

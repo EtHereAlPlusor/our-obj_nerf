@@ -2,7 +2,6 @@ from collections import deque, defaultdict
 import torch
 from tensorboardX import SummaryWriter
 import os
-from lib.config.config import cfg
 from termcolor import colored
 
 

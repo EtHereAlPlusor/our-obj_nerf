@@ -1,5 +1,6 @@
 import torch
 import tqdm
+import importlib
 
 from lib.dataloader.create_dataset import create_data_loader
 from lib.network.create_network import create_network
@@ -7,21 +8,27 @@ from lib.train.create_trainer import create_trainer
 from lib.train.optimizer import create_optimizer
 from lib.train.scheduler import create_lr_scheduler, set_lr_scheduler
 from lib.train.recorder import create_recorder
-from lib.utils.net_utils import save_model, load_model
+from lib.utils.net_utils import save_model, load_model, load_network
 from lib.dataloader.data_utils import to_cuda
 from lib.visualizer.create_visualizer import create_visualizer
 from lib.config.config import cfg
 
 
-def visualize(network):
+def visualize(is_editing=False):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    network = importlib.machinery.SourceFileLoader(cfg.network_module, cfg.network_path).load_module().Network().to(device)
+    load_network(network,
+                 cfg.trained_model_dir,
+                 resume=True,
+                 epoch=cfg.test.epoch)
     network.eval()
     data_loader = create_data_loader(cfg, is_train=False)
     visualizer = create_visualizer(cfg)
     for batch in tqdm.tqdm(data_loader):
         batch = to_cuda(batch)
         with torch.no_grad():
-            output = network(batch)
-            visualizer.visualize(output, batch)
+            output = network(batch, is_editing)
+            visualizer.visualize(output, batch, is_editing)
 
 
 def train():
@@ -59,10 +66,9 @@ def train():
         
         if (epoch + 1) % cfg.save_latest_ep == 0:
             save_model(network, optimizer, scheduler, recorder, cfg.trained_model_dir, epoch, last=True)
-    
-    visualize(network)
 
 
 if __name__ == '__main__':
-    train()
+    # train()
+    visualize(is_editing=cfg.is_editing)
 

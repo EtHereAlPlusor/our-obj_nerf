@@ -1,8 +1,8 @@
-import imp
+import importlib
 
 
 def create_visualizer(cfg):
     module = cfg.visualizer_module
     path = cfg.visualizer_path
-    visualizer = imp.load_source(module, path).Visualizer()
+    visualizer = importlib.machinery.SourceFileLoader(module, path).load_module().Visualizer()
     return visualizer

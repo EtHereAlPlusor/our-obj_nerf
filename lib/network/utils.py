@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
 from einops import reduce
-from lib.config.config import cfg
 
 TINY_NUMBER = 1e-6
 
@@ -15,6 +14,8 @@ def sample_along_ray(near, far, N_samples):
 def raw2outputs(raw, z_vals, rays_d, white_bkgd=False, is_test = False):
     raw2alpha = lambda raw, deltas, act_fn=F.relu: 1.-torch.exp(-act_fn(raw)*deltas)
     deltas = z_vals[...,1:] - z_vals[...,:-1]
+    # zero = torch.zeros_like(deltas)
+    # deltas = torch.where(deltas>10., zero, deltas).to(torch.float32)
     deltas = torch.cat([deltas, torch.Tensor([1e10]).expand(deltas[...,:1].shape).to(raw.device)], -1)
     
     rgb = torch.sigmoid(raw[...,:3])       # [1, N_rays, N_samples, 3]
