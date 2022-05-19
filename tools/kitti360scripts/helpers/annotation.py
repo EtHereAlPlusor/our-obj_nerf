@@ -136,10 +136,10 @@ class KITTI360Bbox3D(KITTI360Object):
         self.T = T
 
     def parseBbox(self, child):
-        semanticIdKITTI = int(child.find('semanticId').text)
-        self.semanticId = kittiId2label[semanticIdKITTI].id
-        self.instanceId = int(child.find('instanceId').text)
-        self.name = kittiId2label[semanticIdKITTI].name
+        semanticIdKITTI = int(child.find('semanticId').text)         # kittiId
+        self.semanticId = kittiId2label[semanticIdKITTI].id          # id
+        self.instanceId = int(child.find('instanceId').text)         # instanceId
+        self.name = kittiId2label[semanticIdKITTI].name              # name
 
         self.start_frame = int(child.find('start_frame').text)
         self.end_frame = int(child.find('end_frame').text)
@@ -359,8 +359,8 @@ class Annotation3D:
         labelPath = os.path.join(labelDir, 'train', '%s.xml' % sequence)
         if not os.path.isfile(labelPath):
             raise RuntimeError('%s does not exist! Please specify KITTI360_DATASET in your environment path.' % labelPath)
-        else:
-            print('Loading %s...' % labelPath)
+        # else:
+        #     print('Loading %s...' % labelPath)
         
         self.init_instance(labelPath)
 
@@ -387,8 +387,8 @@ class Annotation3D:
         # for label in labels:
         #     if label.hasInstances:
         #         print(f'{label.name:<30}:\t {(semanticIds==label.id).sum()}')  # !! semanticIds are the semanticId of the objects
-        print(f'Loaded {len(globalIds)} instances')
-        print(f'Loaded {self.num_bbox} boxes')
+        # print(f'Loaded {len(globalIds)} instances')
+        # print(f'Loaded {self.num_bbox} boxes')
 
 
     def __call__(self, semanticId, instanceId, timestamp=None):

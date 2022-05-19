@@ -20,14 +20,14 @@ class NeRF(nn.Module):
              nn.Linear(W + input_ch, W) for i in range(D-1)])
         
         self.feature_linear = nn.Linear(W, W)
-        self.alpha_linear = nn.Linear(W, 1)
+        self.sigma_linear = nn.Linear(W, 1)
         self.views_linears = nn.ModuleList([nn.Linear(input_ch_views + W, W//2)])
         self.rgb_linear = nn.Linear(W//2, 3)
 
         self.views_linears.apply(weights_init)
         self.pts_linears.apply(weights_init)
         self.feature_linear.apply(weights_init)
-        self.alpha_linear.apply(weights_init)
+        self.sigma_linear.apply(weights_init)
         self.rgb_linear.apply(weights_init)
 
     def forward(self, xyz, ray_dir):
@@ -43,8 +43,8 @@ class NeRF(nn.Module):
             if i in self.skips:
                 h = torch.cat([input_pts, h], -1)
 
-        # alpha
-        alpha = self.alpha_linear(h)
+        # sigma
+        sigma = self.sigma_linear(h)
         feature = self.feature_linear(h)
 
         # rgb
@@ -54,7 +54,7 @@ class NeRF(nn.Module):
             h = F.relu(h)
         rgb = self.rgb_linear(h)  
 
-        outputs = torch.cat([rgb, alpha], -1)
+        outputs = torch.cat([rgb, sigma], -1)
         return outputs.reshape(B, N_rays, N_samples, 4)
 
 

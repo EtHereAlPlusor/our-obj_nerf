@@ -64,7 +64,7 @@ def loadCalibrationCameraToPose(filename):
     fid.close()
     return Tr
 
-def to_cuda(batch, device=torch.device('cuda:'+str(cfg.local_rank))):
+def to_cuda(batch, device=torch.device("cuda" if torch.cuda.is_available() else "cpu")):
     if isinstance(batch, tuple) or isinstance(batch, list):
         batch = [to_cuda(b, device) for b in batch]
     elif isinstance(batch, dict):

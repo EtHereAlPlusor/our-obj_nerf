@@ -10,11 +10,12 @@ from .NeRF import NeRF
 
 
 class Network(nn.Module):
-    def __init__(self, down_ratio=2):
+    def __init__(self):
         super(Network, self).__init__()
-        self.nerf_0 = NeRF(fr_pos=cfg.fr_pos)
+        self.nerf_scn = NeRF(fr_pos=cfg.fr_pos)
+        self.nerf_obj = NeRF(fr_pos=cfg.fr_pos)
     
-    def render_rays(self, rays, batch, near=0., far=100., B = 1):
+    def render_rays(self, rays, batch, near=0., far=100.):
         N_rays = cfg.N_rays
         rays_o, rays_d = rays[:, :, :3], rays[:, :, 3:6]
         scale_factor = torch.norm(rays_d, p=2, dim=2)
@@ -25,11 +26,14 @@ class Network(nn.Module):
         xyz /= cfg.dist
         ray_dir = rays[..., 3:6]
         ray_dir = ray_dir[:, :, None].repeat(1, 1, cfg.N_samples, 1)
-        raw = self.nerf_0(xyz, ray_dir)
-        ret_0 = raw2outputs(raw, z_vals/scale_factor[...,None], rays_d)
+        outputs = {}
+
+        # object
+        raw_coarse = self.nerf_obj(xyz, ray_dir)
+        ret_coarse = raw2outputs(raw_coarse, z_vals/scale_factor[...,None], rays_d)
 
         z_vals_mid = .5 * (z_vals[...,1:] + z_vals[...,:-1])
-        z_samples = sample_pdf(z_vals_mid, ret_0['weights'][...,1:-1], cfg.cascade_samples, det=False)
+        z_samples = sample_pdf(z_vals_mid, ret_coarse['weights'][...,1:-1], cfg.cascade_samples, det=False)
         z_samples = z_samples.detach()  # [1, N_rays, cascade_samples]
 
         z_vals, _ = torch.sort(torch.cat([z_vals, z_samples], -1), -1)  # [1, N_rays, samples_all]
@@ -37,13 +41,32 @@ class Network(nn.Module):
         xyz /= cfg.dist
         ray_dir = rays[..., 3:6]
         ray_dir = ray_dir[:, :, None].repeat(1, 1, cfg.samples_all, 1)
-        raw = self.nerf_0(xyz, ray_dir)
-        ret_1 = raw2outputs(raw, z_vals/scale_factor[...,None], rays_d)
+        raw_fine = self.nerf_obj(xyz, ray_dir)
+        ret_fine = raw2outputs(raw_fine, z_vals/scale_factor[...,None], rays_d)
 
-        outputs = {}
-        for key in ret_1:
-            outputs[key + '_0'] = ret_1[key]
+        # for key in ret_coarse:
+        #     outputs[key + '_coarse_obj'] = ret_coarse[key]
+        for key in ret_fine:
+            outputs[key + '_fine_obj'] = ret_fine[key]
 
+        # scene
+        # raw_coarse = self.nerf_scn(xyz, ray_dir)
+        # ret_coarse = raw2outputs(raw_coarse, z_vals/scale_factor[...,None], rays_d)
+
+        # z_vals_mid = .5 * (z_vals[...,1:] + z_vals[...,:-1])
+        # z_samples = sample_pdf(z_vals_mid, ret_coarse['weights'][...,1:-1], cfg.cascade_samples, det=False)
+        # z_samples = z_samples.detach()  # [1, N_rays, cascade_samples]
+
+        # z_vals, _ = torch.sort(torch.cat([z_vals, z_samples], -1), -1)  # [1, N_rays, samples_all]
+        # xyz = rays_o[:, :, None] + rays_d[:, :, None] * z_vals[:, :, :, None] / scale_factor[...,None,None]
+        # xyz /= cfg.dist
+        # ray_dir = rays[..., 3:6]
+        # ray_dir = ray_dir[:, :, None].repeat(1, 1, cfg.samples_all, 1)
+
+        raw_fine = self.nerf_scn(xyz, ray_dir)
+        ret_fine = raw2outputs(raw_fine, z_vals/scale_factor[...,None], rays_d)
+        for key in ret_fine:
+            outputs[key + '_fine_scn'] = ret_fine[key]
         return outputs
     
     def batchify_rays(self, rays, batch):

@@ -1,7 +1,6 @@
 from .yacs import CfgNode as CN
 import argparse
 import os
-import numpy as np
 
 cfg = CN()
 
@@ -16,6 +15,7 @@ cfg.cascade_samples = 128
 cfg.samples_all = 192
 cfg.use_stereo = False
 cfg.dist = 300
+cfg.objects_only = False
 
 # module
 cfg.train_dataset_module = ''
@@ -56,6 +56,7 @@ cfg.train.collator = 'default'
 cfg.train.batch_sampler = 'default'
 cfg.train.sampler_meta = CN({'min_hw': [256, 256], 'max_hw': [480, 640], 'strategy': 'range'})
 cfg.train.weight_color = 1.
+cfg.train.weight_opacity = 1.
 
 # use adam as default
 cfg.train.optim = 'adam'
@@ -100,7 +101,6 @@ def parse_cfg(cfg, args):
     cfg.trained_config_dir = os.path.join(cfg.base_dir, cfg.task, cfg.exp_name, cfg.trained_config_dir)
     cfg.record_dir = os.path.join(cfg.base_dir, cfg.task, cfg.exp_name, cfg.record_dir)
     cfg.result_dir = os.path.join(cfg.base_dir, cfg.task, cfg.exp_name, cfg.result_dir)
-    cfg.local_rank = args.local_rank
     modules = [key for key in cfg if '_module' in key]
     for module in modules:
         cfg[module.replace('_module', '_path')] = cfg[module].replace('.', '/') + '.py'
@@ -116,7 +116,6 @@ parser.add_argument("--cfg_file", default="configs/default.yaml", type=str)
 parser.add_argument('--test', action='store_true', dest='test', default=False)
 parser.add_argument("--type", type=str, default="")
 parser.add_argument('--det', type=str, default='')
-parser.add_argument('--local_rank', type=int, default=0)
 parser.add_argument('--launcher', type=str, default='none', choices=['none', 'pytorch'])
 parser.add_argument("opts", default=None, nargs=argparse.REMAINDER)
 args = parser.parse_args()

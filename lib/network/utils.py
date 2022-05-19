@@ -1,8 +1,10 @@
 import torch
 import torch.nn.functional as F
-from lib.config.config import cfg
 import torch.nn as nn
 import numpy as np
+from einops import reduce
+from lib.config.config import cfg
+
 TINY_NUMBER = 1e-6
 
 def sample_along_ray(near, far, N_samples):
@@ -11,20 +13,21 @@ def sample_along_ray(near, far, N_samples):
     return z_vals
     
 def raw2outputs(raw, z_vals, rays_d, white_bkgd=False, is_test = False):
-    raw2alpha = lambda raw, dists, act_fn=F.relu: 1.-torch.exp(-act_fn(raw)*dists)
-    dists = z_vals[...,1:] - z_vals[...,:-1]
-    dists = torch.cat([dists, torch.Tensor([1e10]).expand(dists[...,:1].shape).to(raw.device)], -1)
+    raw2alpha = lambda raw, deltas, act_fn=F.relu: 1.-torch.exp(-act_fn(raw)*deltas)
+    deltas = z_vals[...,1:] - z_vals[...,:-1]
+    deltas = torch.cat([deltas, torch.Tensor([1e10]).expand(deltas[...,:1].shape).to(raw.device)], -1)
     
-    rgb = torch.sigmoid(raw[...,:3])
-    alpha = raw2alpha(raw[...,3], dists)
+    rgb = torch.sigmoid(raw[...,:3])       # [1, N_rays, N_samples, 3]
+    alpha = raw2alpha(raw[...,3], deltas)
 
     T = torch.cumprod(1. - alpha + 1e-10, dim=-1)[..., :-1]
     T = torch.cat([torch.ones_like(T[..., 0:1]), T], dim=-1)
     weights = alpha * T
 
-    rgb_map = torch.sum(weights[...,None] * rgb, -2)
+    rgb_map = torch.sum(weights[...,None] * rgb, -2)  # [1, N_rays, 3]
     depth_map = torch.sum(weights * z_vals, -1)
-    ret = {'rgb': rgb_map, 'depth': depth_map, 'weights': weights}
+    opacity_map = reduce(weights, "n1 n2 n3 -> n1 n2", 'sum')  # accumulated opacity
+    ret = {'rgb': rgb_map, 'depth': depth_map, 'opacity': opacity_map, 'weights': weights}
     return ret
 
 def perturb_samples(z_vals):

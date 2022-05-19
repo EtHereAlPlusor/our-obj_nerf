@@ -1,0 +1,66 @@
+task: our-nerf
+gpu: 4
+exp_name: 'object-nerf-joint_psnr27.56'
+
+####
+N_rays: 512
+chunk_size: 2048
+N_samples: 64
+cascade_samples: 128
+samples_all: 192
+white_bkgd: False
+fr_pos: 15
+train_frames: 23
+start: 5285
+dist: 250
+val_list: [5283, 5284, 5285, 5286, 5287, 5288, 5289, 5290, 5291, 5292, 5293, 5294, 5295, 5296, 5297, 5298, 5299, 5300, 5301, 5302, 5303, 5304, 5305, 5306, 5307, 5308]
+instance_id: 26323
+objects_only: True
+
+train_dataset_module: lib.dataloader.dataset
+test_dataset_module: lib.dataloader.dataset
+
+network_module: lib.network.network
+loss_module: lib.train.loss
+
+visualizer_module: lib.visualizer.visualizer
+
+train_dataset:
+    cam2world_root: '/data/datasets/KITTI-360/data_poses/2013_05_28_drive_0000_sync/cam0_to_world.txt'
+    img_root: '/data/datasets/KITTI-360/2013_05_28_drive_0000_sync'
+    instance_root: '/data/datasets/KITTI-360/data_2d_semantics/train/2013_05_28_drive_0000_sync/image_00/instance'
+    bbx_root: '/data/datasets/KITTI-360/data_3d_bboxes'
+    data_root: '/data/datasets/KITTI-360/'
+    sequence: '2013_05_28_drive_0000_sync'
+    split: 'train'
+
+test_dataset:
+    cam2world_root: '/data/datasets/KITTI-360/data_poses/2013_05_28_drive_0000_sync/cam0_to_world.txt'
+    img_root: '/data/datasets/KITTI-360/2013_05_28_drive_0000_sync'
+    instance_root: '/data/datasets/KITTI-360/data_2d_semantics/train/2013_05_28_drive_0000_sync/image_00/instance'
+    bbx_root: '/data/datasets/KITTI-360/data_3d_bboxes'
+    data_root: '/data/datasets/KITTI-360/'
+    sequence: '2013_05_28_drive_0000_sync'
+    split: 'val'
+
+train:
+    batch_size: 1
+    lr: 1e-4
+    weight_decay: 0.
+    epoch: 150
+    scheduler:
+        type: 'exponential'
+        gamma: 0.5
+        decay_epochs: 200
+    num_workers: 4
+    weight_color: 1.
+    weight_opacity: 0.1
+
+test:
+    dataset: KITTI360Val
+    batch_size: 1
+
+ep_iter: 1000
+save_ep: 1
+save_latest_ep: 1
+log_interval: 1

@@ -9,7 +9,7 @@ from lib.dataloader.data_utils import to_cuda
 
 class Trainer(object):
     def __init__(self, network):
-        device = torch.device('cuda:{}'.format(cfg.local_rank))
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         network = network.to(device)
         if cfg.distributed:
             network = torch.nn.SyncBatchNorm.convert_sync_batchnorm(network)
@@ -19,8 +19,7 @@ class Trainer(object):
                 output_device=cfg.local_rank,
                 # find_unused_parameters=True
            )
-        self.network = network
-        self.local_rank = cfg.local_rank
+        self.network = network  # Loss
         self.device = device
 
     def reduce_loss_stats(self, loss_stats):
