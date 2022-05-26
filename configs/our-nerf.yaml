@@ -1,5 +1,5 @@
 task: our-nerf
-gpu: 4
+gpu: 0
 exp_name: 'object-nerf-joint'
 
 ####
@@ -15,7 +15,7 @@ start: 5285
 dist: 250
 val_list: [5283, 5284, 5285, 5286, 5287, 5288, 5289, 5290, 5291, 5292, 5293, 5294, 5295, 5296, 5297, 5298, 5299, 5300, 5301, 5302, 5303, 5304, 5305, 5306, 5307, 5308]
 instance_id: 26323
-is_editing: True
+is_editing: False
 offset: 2.5
 
 train_dataset_module: lib.dataloader.dataset
