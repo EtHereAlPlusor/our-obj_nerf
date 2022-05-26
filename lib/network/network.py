@@ -9,12 +9,40 @@ from .NeRF import NeRF
 
 
 class Network(nn.Module):
+    """Structure of the network
+
+    Using two NeRF MLPs respectively to render the scene and objects.
+    
+    """
     def __init__(self):
         super(Network, self).__init__()
         self.nerf_scn = NeRF(fr_pos=cfg.fr_pos)
         self.nerf_obj = NeRF(fr_pos=cfg.fr_pos)
     
     def render_rays(self, rays, batch, is_editing=False, near=0., far=100.):
+        """render the rays
+        
+        Sample on the rays and query the points' colors c and densities sigma, 
+        and then integral c and sigma to obtain the color of the ray
+
+        Args:
+            rays: contain rays_o and rays_d
+            batch:
+            is_editing: bool, specify the strategy that how we feed the two branches
+                        if False, we use the sampled points to train the MLPs, and obtain outputs respectively
+                        if True, we use different points on the ray to query the MLPs respectively, 
+                                 and then cat them to render the whole scene
+            near: float, specify the near bound we sample the points
+            far: float, specify the far bound we sample the points
+        
+        Returns:
+            outputs: dict, varies according to is_editing
+                     if is_editing is False, will return 'rgb', 'depth', 'opacity' and 'weights' of the two branchs 
+                                             without edits
+                     if is_editing is True, will return 'rgb', 'depth', 'opacity' and 'weights' of the whole scene
+                                             after editing
+        
+        """
         rays_o, rays_d = rays[:, :, :3], rays[:, :, 3:6]
         scale_factor = torch.norm(rays_d, p=2, dim=2)
         near_depth, far_depth = near * torch.ones((1,rays_d.shape[1])).to(rays), far * torch.ones((1,rays_d.shape[1])).to(rays)

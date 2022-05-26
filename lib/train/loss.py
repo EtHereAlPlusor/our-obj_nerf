@@ -6,6 +6,13 @@ from torch.nn import functional as F
 import numpy as np
 
 class Loss(nn.Module):
+    """Definition of the loss
+
+    Query the network and compute the rgb and opacity loss of the scene and object branch for each batch
+    Note that the scene branch only has rgb loss while object branch has both rgb and opacity loss
+    We jointly optimize the two branches
+    
+    """
     def __init__(self, net):
         super(Loss, self).__init__()
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

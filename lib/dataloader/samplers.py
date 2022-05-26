@@ -1,9 +1,9 @@
-from torch.utils.data.sampler import Sampler
-from torch.utils.data.sampler import BatchSampler
 import numpy as np
 import torch
 import math
 import torch.distributed as dist
+from torch.utils.data.sampler import Sampler
+from torch.utils.data.sampler import BatchSampler
 
 from lib.config.config import cfg
 

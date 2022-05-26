@@ -6,6 +6,9 @@ from lib.config.config import cfg
 from .embedder import get_embedder
 
 class NeRF(nn.Module):
+    """Structure of the MLP
+    
+    """
     def __init__(self, D=8, W=256, fr_pos=10, fr_view=4, skips=[4]):
         """
         """

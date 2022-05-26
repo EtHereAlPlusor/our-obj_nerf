@@ -1,7 +1,4 @@
 from torch.utils.data.dataloader import default_collate
-import torch
-import numpy as np
-from lib.config.config import cfg
 
 _collators = {}
 

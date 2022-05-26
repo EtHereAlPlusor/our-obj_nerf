@@ -8,6 +8,8 @@ from lib.config.config import cfg
 from lib.dataloader.data_utils import to_cuda
 
 class Trainer(object):
+    """Trainer
+    """
     def __init__(self, network):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         network = network.to(device)
@@ -47,6 +49,20 @@ class Trainer(object):
             batch['iter_step'] = iter_step
             
     def train(self, epoch, data_loader, optimizer, recorder):
+        """Schedule the training procedure of the network
+
+        For each batch in data_loader, we query the Loss module to obtain the total loss and
+        then optimize it. By the way, we will record the states and visulize them.
+
+        Args:
+            epoch:
+            data_loader:
+            optimizer:
+            recorder:
+
+        Returns: None
+
+        """
         max_iter = len(data_loader)
         self.network.train()
         end = time.time()

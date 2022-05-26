@@ -8,6 +8,10 @@ from lib.config.config import cfg
 from tools.kitti360scripts.helpers.annotation import Annotation3D
 
 class Dataset:
+    """Load and prepare data from specified path
+    
+    """
+
     def __init__(self, cam2world_root, img_root, instance_root, bbx_root, data_root, sequence, split):
         super(Dataset, self).__init__()
         # path and initialization

@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 
 class Embedder:
+    """Position embedding
+    
+    """
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.create_embedding_fn()

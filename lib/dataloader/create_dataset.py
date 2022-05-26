@@ -1,15 +1,14 @@
-from . import samplers
-from .dataset_catalog import DatasetCatalog
-import torch
-import torch.utils.data
 import importlib
-import os
-from .collate_batch import create_collator
 import numpy as np
 import time
-from lib.config.config import cfg
-from torch.utils.data import DataLoader, ConcatDataset
+import torch
+import torch.utils.data
+from torch.utils.data import DataLoader
 from prefetch_generator import BackgroundGenerator
+
+from . import samplers
+from .collate_batch import create_collator
+from lib.config.config import cfg
 
 class DataLoaderX(DataLoader):
     def __iter__(self):
@@ -73,6 +72,18 @@ def worker_init_fn(worker_id):
 
 
 def create_data_loader(cfg, is_train=True, is_distributed=False, max_iter=-1):
+    """Create data loader
+
+    Args:
+        cfg: configs
+        is_train: bool, specify the configs
+        is_distributed: bool
+        max_iter: int
+
+    Returns:
+        data_loader: data loader provided by pytorch
+    
+    """
     if is_train:
         batch_size = cfg.train.batch_size
         # shuffle = True

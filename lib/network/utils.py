@@ -1,17 +1,37 @@
 import torch
 import torch.nn.functional as F
-import torch.nn as nn
-import numpy as np
 from einops import reduce
 
 TINY_NUMBER = 1e-6
 
 def sample_along_ray(near, far, N_samples):
+    """Uniform sample along the ray
+    
+    Args:
+        near: the near bound of the ray
+        far: the far bound of the ray
+        N_samples: the number of sampled point along the ray
+
+    Returns:
+        z_vals: t in p = o + dt, specify the position of the points
+
+    """
     z_steps = torch.linspace(0, 1, N_samples, device=near.device)[None, None]
     z_vals = near[..., None] * (1 - z_steps) + far[..., None] * z_steps
     return z_vals
     
-def raw2outputs(raw, z_vals, rays_d, white_bkgd=False, is_test = False):
+def raw2outputs(raw, z_vals, rays_d, white_bkgd=False):
+    """Turn the outputs of the MLPs into color, depth, opacity and weights of each ray
+    
+    Args:
+        raw: outputs of the MLPs
+        z_vals: specify the positions of the samples points
+        rays_d:
+
+    Returns:
+        ret: dict, the color, depth, opacity and weights of each ray
+
+    """
     raw2alpha = lambda raw, deltas, act_fn=F.relu: 1.-torch.exp(-act_fn(raw)*deltas)
     deltas = z_vals[...,1:] - z_vals[...,:-1]
     # zero = torch.zeros_like(deltas)
@@ -32,8 +52,8 @@ def raw2outputs(raw, z_vals, rays_d, white_bkgd=False, is_test = False):
     return ret
 
 def perturb_samples(z_vals):
-    """
-    Stratified sampling
+    """ Stratified sampling
+
     """
     # get intervals between samples
     mids = .5 * (z_vals[..., 1:] + z_vals[..., :-1])
@@ -45,12 +65,16 @@ def perturb_samples(z_vals):
     return z_vals
 
 def sample_pdf(bins, weights, N_samples, det=False):
-    '''
-    :param bins: tensor of shape [..., M+1], M is the number of bins
-    :param weights: tensor of shape [..., M]
-    :param N_samples: number of samples along each ray
-    :param det: if True, will perform deterministic sampling
-    :return: [..., N_samples]
+    ''' Resample according to the weights of the rays
+
+    Args:
+        bins: tensor of shape [..., M+1], M is the number of bins
+        weights: tensor of shape [..., M]
+        N_samples: number of samples along each ray
+        det: if True, will perform deterministic sampling
+
+    Returns: 
+        samples: [..., N_samples]
     '''
     # Get pdf
     weights = weights + TINY_NUMBER      # prevent nans

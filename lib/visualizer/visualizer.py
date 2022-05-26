@@ -4,18 +4,31 @@ import cv2
 import os
 import imageio
 
-from tools.kitti360scripts.helpers.labels import id2label
 from lib.config.config import cfg
 
 to8b = lambda x : (255*np.clip(x,0,1)).astype(np.uint8)
 
 class Visualizer:
+    """Visualizer
+    """
     def __init__(self, ):
         self.color_crit = lambda x, y: ((x - y)**2).mean()
         self.mse2psnr = lambda x: -10. * np.log(x) / np.log(torch.tensor([10.]))
         self.psnr = []
 
     def visualize(self, output, batch, is_editing=False):
+        """Turn the outputs of the network - color and depth of each pixel, into pictures
+
+        Args:
+            output: dict, the outputs of the network, containing rgb, depth information of the pixels
+            batch: dict, contains the gt information
+            is_editing: bool, specify the strategy we use the outputs
+                        if False, the outputs of the scene and object branches will be visualized without any edit
+                        if True, the outputs of the whole scene with objects being edited will be visualized
+
+        Returns: None
+
+        """
         b = len(batch['rays'])
         if not is_editing:
             for b in range(b):

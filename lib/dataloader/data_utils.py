@@ -74,6 +74,19 @@ def to_cuda(batch, device=torch.device("cuda" if torch.cuda.is_available() else 
     return batch
 
 def build_rays(ixt, c2w, H, W):
+    """Compute rays of each picture
+
+    Args:
+        ixt: intrinsic matrix of the camera
+        c2w: pose of the picture
+        H: height of the picture
+        W: width of the picture
+
+    Returns:
+        rays_o: origins of the rays, [H*w, 3]
+        rays_d: directions of the rays, [H*w, 3]
+    
+    """
     X, Y = np.meshgrid(np.arange(W), np.arange(H))
     XYZ = np.concatenate((X[:, :, None], Y[:, :, None], np.ones_like(X[:, :, None])), axis=-1)
     XYZ = XYZ @ np.linalg.inv(ixt[:3, :3]).T
