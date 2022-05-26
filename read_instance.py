@@ -9,7 +9,7 @@ if __name__ == '__main__':
     # print(im.shape)
     for row in range(im.shape[0]):
         for col in range(im.shape[1]):
-            if im[row][col] == 26323:
+            if im[row][col] == 26323:   # instance id
                 area += 1
     area = area / (im.shape[0]*im.shape[1])
     print(area)
