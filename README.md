@@ -3,7 +3,7 @@
 ## Installation
 1. Create a virtual environment via `conda`.
     ```
-    conda create -n our-nerf python=3.7
+    conda create -n our-nerf python=3.9
     conda activate our-nerf
     ```
 2. Install `torch` and `torchvision`.
