@@ -62,4 +62,4 @@
     <img src="./images/scene_editing.png" width="90%">
 
 ## Citation
-Copyright © 2022, Zhejiang University. All rights reserved. We favor any positive inquiry, please contact `3190102060@zju.edu.cn`.
+Copyright © 2022, Zhejiang University. All rights reserved. We favor any positive inquiry, please contact `jacey.huang@zju.edu.cn`.
